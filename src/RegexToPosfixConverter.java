@@ -38,7 +38,7 @@ public class RegexToPosfixConverter {
 	private static void test(String regex) {
 		ArrayList<Character> result;
 		try {
-			result = fromRegexToPostfix(regex);
+			result = convert(regex);
 			for(char c: result) {
 				System.out.print(c+" ");
 			}System.out.println();
@@ -49,7 +49,7 @@ public class RegexToPosfixConverter {
 	}
 
 	
-	public static ArrayList<Character> fromRegexToPostfix(String regex) throws SyntaxRegexException{
+	public static ArrayList<Character> convert(String regex) throws SyntaxRegexException{
 		
 		Stack<Character> operadores= new Stack<>();
 		ArrayList<Character> postfixRegex = new ArrayList<Character>();
