@@ -12,11 +12,11 @@ public class PosfixToTreeConverter {
 		if(postfix.isEmpty()) throw new SyntaxRegexException(SyntaxRegexException.SYNTAX_ERROR);
 		char c = postfix.remove(postfix.size() -1);
 		root= new ExpTree(c);
-		if(c=='.' || c=='+' || c=='*') {
-			if(c!='*') {
-				root.hijoDer = convert(postfix, root.hijoDer);
-			}
-			root.hijoIzq = convert(postfix, root.hijoIzq);
+		if(c=='.' || c=='+') {
+			root.right = convert(postfix, root.right);
+			root.left = convert(postfix, root.left);
+		}else if(c=='*') {
+			if(!postfix.isEmpty()) root.left = convert(postfix, root.left); // covers posibility of having: "*" expresion.
 		}
 		return root;
 	}
@@ -33,17 +33,17 @@ public class PosfixToTreeConverter {
 	
 	private static void printTree(ExpTree root) {
 		if(root==null) return;
-		if(root.hijoIzq!=null) {
+		if(root.left!=null) {
 			System.out.print("(");
-			printTree(root.hijoIzq);
+			printTree(root.left);
 			System.out.print(")");
 		}
 		
-		System.out.print(root.sign);
+		System.out.print(root.operator);
 		
-		if(root.hijoDer!=null) {
+		if(root.right!=null) {
 			System.out.print("(");
-			printTree(root.hijoDer);
+			printTree(root.right);
 			System.out.print(")");
 		}
 		

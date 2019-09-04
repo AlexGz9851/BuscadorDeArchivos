@@ -1,39 +1,75 @@
 import java.util.ArrayList;
+import java.util.Set;
 
 public class EvaluarPalabra {
 
-	public static int evaluar(ExpTree root, String palabra, int iniSub) {
-		// devuelve el index final del substring el cual coincide con el regex.
-		int finalSub= -1;
-		if(root.sign=='.' ) {
-			int izq= evaluar(root.hijoIzq, palabra,  iniSub);
-			int der;
-			if(izq==-1 ) return -1;
-			der= evaluar(root.hijoDer, palabra,  izq);
-			if(der<0) return der;
-			finalSub = izq > der ? izq : der;
-		}else if( root.sign=='+'){
-			int izq= evaluar(root.hijoIzq, palabra,  iniSub);
-			int der= evaluar(root.hijoDer, palabra,  iniSub);
-			finalSub = izq > der ? izq : der;
-		}else  if(root.sign=='*') {//TODO CORREGIR CERRADURAS
-			int izq = evaluar(root.hijoIzq, palabra, iniSub);
-			if(izq<0) return iniSub;
-			int newIzq= evaluar(root, palabra, izq);
-			finalSub = izq > newIzq ? izq : newIzq;
-		}else {
-			if(iniSub==-2) return iniSub;
-			if(iniSub>=palabra.length()) 
-				finalSub = -1;
-			else 
-				if(palabra.charAt(iniSub)==root.sign)
-					finalSub = iniSub +1;
-				else
-					finalSub =-2;
+	public static int evaluar(ExpTree root, String palabra, int iniSub, boolean exact) {
+			ArrayList<Integer> posibilidades = evaluarInner(root, palabra, iniSub);
+			int max=posibilidades.get(0);
+			for(int i: posibilidades) {
+				max = i>max ? i : max;
+			}
+			return  exact ? ( max==palabra.length() ?  max :  -1) :  max;
+	}
+	
+	
+
+	
+	
+	public static ArrayList<Integer> evaluarInner(ExpTree root, String palabra, int iniSub) {
+		// devuelve el conjunto de  indexes finales del substring el cual coincide con el regex.
+		ArrayList<Integer> posibilidades, left, right;
+		posibilidades= new ArrayList<Integer>();
+		posibilidades.add(-1);
+		char c= root.operator;
+		switch(c) {
+			case '+':
+				// unión.
+				left=evaluarInner(root.left, palabra, iniSub);
+				right=evaluarInner(root.right, palabra, iniSub);
+				posibilidades.addAll(left);
+				posibilidades.addAll(right);
+				break;
+		    case '.':
+		    	// concatenacion
+		    	left=evaluarInner(root.left, palabra, iniSub);
+		    	for(int l: left) {
+		    		if(l>=iniSub) {
+		    			right = evaluarInner(root.right, palabra, l);
+		    			for(int r: right) {
+		    				if(r>=l) posibilidades.add(r);
+		    			}
+		    		}
+		    	}
+		    	break;
+		    case '*':
+		    	// cerradura
+		    	posibilidades.add(iniSub);
+		    	if(root.left==null) {
+		    		posibilidades.add(palabra.length());
+		    		break;
+		    	}
+		    	left=evaluarInner(root.left, palabra, iniSub);
+		    	for(int l: left) {
+		    		if(l>iniSub) {
+		    			posibilidades.add(l);
+		    			right = evaluarInner(root, palabra, l);
+		    			for(int r: right) {
+			    			if(r>l) {
+			    				posibilidades.add(r);		
+			    			}
+		    			}
+		    		}
+		    	}
+		
+		    break;
+		    default:
+		    	//TODO letra.
+		    	if(iniSub<palabra.length() && iniSub>=0) {
+		    		if(palabra.charAt(iniSub)==c) posibilidades.add(iniSub+1);
+		    	}
 		}
-		
-		
-		return finalSub;
+		return posibilidades;
 	}
 	
 	private static void test(String regex, String palabra, int inicio) {
@@ -43,13 +79,15 @@ public class EvaluarPalabra {
 		try {
 			postfix = RegexToPosfixConverter.convert(regex);
 			root = PosfixToTreeConverter.convert(postfix);
-			int fin=evaluar(root, palabra, inicio);
+			int fin=evaluar(root, palabra, inicio, false);
 			if(fin<0) 
 				System.out.println("false");
 			else {
+				System.out.print(palabra.substring(0, inicio));
+				System.out.print("-");
 				System.out.print(palabra.substring(inicio, fin));
 				System.out.print("-");
-				System.out.println(palabra.substring(fin));
+				System.out.println(palabra.substring(fin, palabra.length()));
 			}
 		} catch (SyntaxRegexException e) {
 
@@ -59,6 +97,7 @@ public class EvaluarPalabra {
 	}
 	
 	public static void main(String[] a) {
+
 		test( "aab",  "aaab", 1);
 		test( "aab",  "aaab", 0);
 		test( "aab",  "aaba", 0);

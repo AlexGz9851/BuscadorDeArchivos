@@ -1,7 +1,7 @@
 
 public class ExpTree {
-		public ExpTree hijoDer,hijoIzq;//,padre;
-		public char sign;
+		public ExpTree right,left;//,padre;
+		public char operator;
 		
 		/*public ExpTree(char c, ExpTree padre ) {
 			//this.padre=padre;
@@ -12,8 +12,8 @@ public class ExpTree {
 		
 		public ExpTree(char c) {
 			//this.padre=null;
-			sign=c;
-			hijoDer=null;
-			hijoIzq=null;
+			operator=c;
+			right=null;
+			left=null;
 		}
 }
