@@ -6,7 +6,6 @@ public class RegexToPosfixConverter {
 	
 	private static ArrayList<Character> jerarquia = getJerarqArray();
 	
-	
 	private static ArrayList<Character> getJerarqArray(){
 		ArrayList<Character> jerarquia = new ArrayList<Character>();
 		jerarquia.add('+');// Jerarquia mas baja, 0
@@ -33,21 +32,7 @@ public class RegexToPosfixConverter {
 			}
 		}
 	}	
-
 	
-	private static void test(String regex) {
-		ArrayList<Character> result;
-		try {
-			result = convert(regex);
-			for(char c: result) {
-				System.out.print(c+" ");
-			}System.out.println();
-		} catch (SyntaxRegexException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
 	
 	public static ArrayList<Character> convert(String regex) throws SyntaxRegexException{
 		
@@ -65,7 +50,7 @@ public class RegexToPosfixConverter {
 			    operadores.add(c);
 			    break;
 			    
-			  case ')': // TODO CONCAT 
+			  case ')': 
 			    while(true) {
 			    	if(operadores.isEmpty()) throw new SyntaxRegexException(SyntaxRegexException.PARENTESIS_DESBALANCEADOS);
 			    	char currentOp= operadores.pop();
@@ -84,10 +69,9 @@ public class RegexToPosfixConverter {
 				  
 			  default:
 				  postfixRegex.add(c);
-				  
-				
 			}
 		}
+		
 		while(!operadores.isEmpty()) {
 			char op = operadores.pop();
 			if(op=='(') throw new SyntaxRegexException(SyntaxRegexException.PARENTESIS_DESBALANCEADOS);
@@ -98,12 +82,24 @@ public class RegexToPosfixConverter {
 	}
 	
 	
+	/*Functions for testing*/
+	private static void test(String regex) {
+		ArrayList<Character> result;
+		try {
+			result = convert(regex);
+			for(char c: result) {
+				System.out.print(c+" ");
+			}System.out.println();
+		} catch (SyntaxRegexException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	public static void main(String[] a) {
 		//
 		test("aa*b+ab*c");
 		test("(ab*)*(a+b)*c+(db)*");
 		test("a(((a+bc)*b)*cd*(a+b)*w)*");	
 	}
-	
-	
 }

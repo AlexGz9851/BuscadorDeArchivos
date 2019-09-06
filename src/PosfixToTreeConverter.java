@@ -12,15 +12,21 @@ public class PosfixToTreeConverter {
 		if(postfix.isEmpty()) throw new SyntaxRegexException(SyntaxRegexException.SYNTAX_ERROR);
 		char c = postfix.remove(postfix.size() -1);
 		root= new ExpTree(c);
+		
 		if(c=='.' || c=='+') {
 			root.right = convert(postfix, root.right);
 			root.left = convert(postfix, root.left);
 		}else if(c=='*') {
 			if(!postfix.isEmpty()) root.left = convert(postfix, root.left); // covers posibility of having: "*" expresion.
 		}
+		
 		return root;
 	}
 	
+	
+	
+	
+	/*FUNCTIONS FOR TESTING*/
 	private static void test(ArrayList<Character> postfix) {
 		try {
 			ExpTree result = convert(postfix);

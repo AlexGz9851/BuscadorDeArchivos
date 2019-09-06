@@ -3,22 +3,21 @@ import java.util.Set;
 
 public class EvaluarPalabra {
 
-	public static int evaluar(ExpTree root, String palabra, int iniSub, boolean exact) {
+	private static int evaluar(ExpTree root, String palabra, int iniSub, boolean exact) {
+			palabra = palabra.toLowerCase();
 			ArrayList<Integer> posibilidades = evaluarInner(root, palabra, iniSub);
 			int max=posibilidades.get(0);
-			for(int i: posibilidades) {
-				max = i>max ? i : max;
-			}
+			for(int i: posibilidades) { max = i>max ? i : max; }
 			return  exact ? ( max==palabra.length() ?  max :  -1) :  max;
 	}
 	
 	
-
 	
-	
-	public static ArrayList<Integer> evaluarInner(ExpTree root, String palabra, int iniSub) {
+	private static ArrayList<Integer> evaluarInner(ExpTree root, String palabra, int iniSub) {
 		// devuelve el conjunto de  indexes finales del substring el cual coincide con el regex.
-		ArrayList<Integer> posibilidades, left, right;
+		// compara el string con el arbol generado por el regex.
+		
+		ArrayList<Integer> posibilidades, left, right; // indices finales posibles  para la substring. [iniSub, fin)
 		posibilidades= new ArrayList<Integer>();
 		posibilidades.add(-1);
 		char c= root.operator;
@@ -28,7 +27,7 @@ public class EvaluarPalabra {
 				left=evaluarInner(root.left, palabra, iniSub);
 				right=evaluarInner(root.right, palabra, iniSub);
 				posibilidades.addAll(left);
-				posibilidades.addAll(right);
+				posibilidades.addAll(right);// uniendo conjuntos
 				break;
 		    case '.':
 		    	// concatenacion
@@ -64,7 +63,7 @@ public class EvaluarPalabra {
 		
 		    break;
 		    default:
-		    	//TODO letra.
+		    	//letra.
 		    	if(iniSub<palabra.length() && iniSub>=0) {
 		    		if(palabra.charAt(iniSub)==c) posibilidades.add(iniSub+1);
 		    	}
@@ -72,14 +71,46 @@ public class EvaluarPalabra {
 		return posibilidades;
 	}
 	
-	private static void test(String regex, String palabra, int inicio) {
+	
+	public static int[] findBestSubstringMatch(String regex, String word) {
+		int[] bestInicioFin = {0,0,0}; // start, end, anyWord flag. 0, false, 1 true.
+		if(regex.equals("*")) { // accepts any substring
+			bestInicioFin[2] = 1; //any string flag.
+			return bestInicioFin;
+		}
+		ArrayList<Character> postfix;
+		ExpTree root;
+		try {
+			postfix = RegexToPosfixConverter.convert(regex);
+			root = PosfixToTreeConverter.convert(postfix);
+			for(int inicio=0;inicio<word.length();inicio++) {
+				int fin=evaluar(root, word, inicio, false);
+				if(fin-inicio>bestInicioFin[1]-bestInicioFin[0]) {
+					bestInicioFin[0]=inicio;
+					bestInicioFin[1]=fin;
+				}
+			}
+			
+		}catch (SyntaxRegexException e) {
+			e.printStackTrace();
+		}
+		return bestInicioFin;
+	}
+	
+	/*test functions*/
+	public static void test(String regex, String palabra, int inicio) {
+		test( regex,  palabra,  inicio, false);
+	}
+	
+	
+	public static void test(String regex, String palabra, int inicio, boolean exact) {
 		ArrayList<Character> postfix;
 		ExpTree root;
 		
 		try {
 			postfix = RegexToPosfixConverter.convert(regex);
 			root = PosfixToTreeConverter.convert(postfix);
-			int fin=evaluar(root, palabra, inicio, false);
+			int fin=evaluar(root, palabra, inicio, exact);
 			if(fin<0) 
 				System.out.println("false");
 			else {
@@ -95,6 +126,7 @@ public class EvaluarPalabra {
 		}
 		
 	}
+	
 	
 	public static void main(String[] a) {
 
